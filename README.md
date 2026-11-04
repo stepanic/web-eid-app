@@ -9,7 +9,7 @@
 > Context: [ivoras/eidchain#1](https://github.com/ivoras/eidchain/issues/1).
 >
 > Until an official Web eID release includes the change, [Releases](https://github.com/stepanic/web-eid-app/releases)
-> has a macOS DMG (Apple silicon) signed with ITalk d.o.o.'s Developer ID and notarized. It installs over the
+> has a universal macOS DMG (Apple silicon and Intel) signed with ITalk d.o.o.'s Developer ID and notarized. It installs over the
 > official app at the same path, so the browser extensions keep working. Once upstream
 > ships the fix, install the official DMG again.
 >

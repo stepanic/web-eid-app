@@ -22,19 +22,35 @@ SIGNCERT="${SIGNCERT:-ITalk d.o.o.}"
 ASC_KEY_ID="${ASC_KEY_ID:-25KYCN22QD}"
 ASC_ISSUER_ID="${ASC_ISSUER_ID:-69a6de85-f7cc-47e3-e053-5b8c7c11a4d1}"
 ASC_KEY_PATH="${ASC_KEY_PATH:-$HOME/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8}"
-BUILD_DIR=build-signed
-
-# Homebrew: qtbase qtsvg qttools googletest openssl@3 cmake ninja.
-# Homebrew Qt is arm64 only, so the DMG is Apple silicon only.
-export OPENSSL_ROOT_DIR="$(brew --prefix openssl@3)"
-export GTest_ROOT="$(brew --prefix googletest)"
+BUILD_DIR=build-universal
+# Universal (arm64 + x86_64) so the same DMG runs on Intel Macs too. That rules
+# out Homebrew (arm64 only): Qt comes from qt.io via aqtinstall, whose clang_64
+# build is already universal, and OpenSSL/GTest from vcpkg with the repo's
+# arm64-x64-osx triplet, the same way upstream's macOS CI does it.
+DEPS="${DEPS:-$HOME/.cache/web-eid-build}"
+QT_VERSION="${QT_VERSION:-6.11.2}"
+mkdir -p "$DEPS"
+if [ ! -d "$DEPS/qt/$QT_VERSION/macos" ]; then
+  python3 -m venv "$DEPS/venv"
+  "$DEPS/venv/bin/pip" -q install aqtinstall
+  "$DEPS/venv/bin/aqt" install-qt mac desktop "$QT_VERSION" clang_64 -O "$DEPS/qt" -m qtimageformats
+fi
+if [ ! -x "$DEPS/vcpkg/vcpkg" ]; then
+  git clone -q https://github.com/microsoft/vcpkg.git "$DEPS/vcpkg"
+  "$DEPS/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+fi
+export VCPKG_ROOT="$DEPS/vcpkg"
 
 git submodule update --init --recursive
 
 cmake -G Ninja -B "$BUILD_DIR" -S . \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DCMAKE_PREFIX_PATH=/opt/homebrew \
-  -DQt6LinguistTools_DIR="$(brew --prefix qttools)/lib/cmake/Qt6LinguistTools" \
+  -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+  -DCMAKE_PREFIX_PATH="$DEPS/qt/$QT_VERSION/macos" \
+  -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+  -DVCPKG_MANIFEST_DIR="$PWD/lib/libelectronic-id" \
+  -DVCPKG_OVERLAY_TRIPLETS="$PWD/.github/vcpkg-triplets" \
+  -DVCPKG_TARGET_TRIPLET=arm64-x64-osx \
   -DSIGNCERT="$SIGNCERT"
 cmake --build "$BUILD_DIR" --target installer
 
