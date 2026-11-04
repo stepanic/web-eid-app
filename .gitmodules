@@ -1,6 +1,6 @@
 [submodule "lib/libelectronic-id"]
 	path = lib/libelectronic-id
-	url = ../libelectronic-id
+	url = https://github.com/stepanic/libelectronic-id.git
 [submodule "src/mac/js"]
 	path = src/mac/js
-	url = ../web-eid-webextension
+	url = https://github.com/web-eid/web-eid-webextension.git

@@ -1,5 +1,21 @@
 # web-eid-app
 
+> **This is a fork.** It adds support for the newer Croatian eOI (ATR historical bytes
+> `AKDeID2.0-SSCD`) and for the module path of Certilia Middleware 3.9 on macOS. The
+> official app rejects that card with "card not supported". The change is in the
+> `lib/libelectronic-id` submodule, which points at
+> [stepanic/libelectronic-id](https://github.com/stepanic/libelectronic-id). It is proposed
+> upstream as [web-eid/libelectronic-id#176](https://github.com/web-eid/libelectronic-id/pull/176).
+> Context: [ivoras/eidchain#1](https://github.com/ivoras/eidchain/issues/1).
+>
+> Until an official Web eID release includes the change, [Releases](https://github.com/stepanic/web-eid-app/releases)
+> has a macOS DMG (Apple silicon) signed with ITalk d.o.o.'s Developer ID and notarized. It installs over the
+> official app at the same path, so the browser extensions keep working. Once upstream
+> ships the fix, install the official DMG again.
+>
+> Build the DMG with `scripts/release-macos-italk.sh`. Notarization uses ITalk's App Store Connect API key
+> (`~/.appstoreconnect/private_keys/AuthKey_25KYCN22QD.p8`), not an Apple ID and app-specific password.
+
 ![European Regional Development Fund](https://github.com/open-eid/DigiDoc4-Client/blob/master/client/images/EL_Regionaalarengu_Fond.png)
 
 The Web eID application performs cryptographic digital signing and
