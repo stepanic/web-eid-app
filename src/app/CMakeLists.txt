@@ -77,7 +77,12 @@ elseif(APPLE)
     add_custom_target(installer-native DEPENDS macdeployqt
         COMMAND rm -rf root_native
         COMMAND DESTDIR=root_native ${CMAKE_COMMAND} --install . --component main
-        COMMAND pkgbuild --root root_native --identifier "eu.web-eid.$<TARGET_NAME:web-eid>"
+        # Keep Installer from "upgrading" another copy of the bundle found elsewhere
+        # on disk (e.g. a local build tree) instead of installing to /Applications/Utilities.
+        COMMAND pkgbuild --analyze --root root_native native-component.plist
+        COMMAND plutil -replace 0.BundleIsRelocatable -bool NO native-component.plist
+        COMMAND pkgbuild --root root_native --component-plist native-component.plist
+            --identifier "eu.web-eid.$<TARGET_NAME:web-eid>"
             "$<$<BOOL:${SIGNCERT}>:--sign;${SIGNCERT}>"
             --version "${PROJECT_VERSION}" $<TARGET_NAME:web-eid>-native_${PROJECT_VERSION}.pkg
         COMMAND_EXPAND_LISTS
